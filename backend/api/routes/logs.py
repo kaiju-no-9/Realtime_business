@@ -100,7 +100,7 @@ def get_stats(user_email: str, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    key_ids = [k.id for k in db.query(APIKeyModel).filter(APIKeyModel.user_id == user.id).all()]
+    key_ids = [k.id for k in db.query(APIKey).filter(APIKey.user_id == user.id).all()]
 
     total_logs = db.query(Log).filter(Log.api_key_id.in_(key_ids)).count()
     alerts     = db.query(Alert).filter(Alert.api_key_id.in_(key_ids)).count()

@@ -95,7 +95,11 @@ async def _handle_message(data: dict):
 
 
 async def run_worker():
-    """Long-running coroutine — start as asyncio.create_task() in lifespan."""
+    """Long-running coroutine — start as asyncio.create_task() in lifespan.
+    
+    If Kafka is unavailable the worker logs a warning and exits gracefully
+    so the rest of the application continues running.
+    """
     consumer = AIOKafkaConsumer(
         settings.KAFKA_LOGS_TOPIC,
         bootstrap_servers=settings.KAFKA_BOOTSTRAP_SERVERS,
@@ -104,7 +108,20 @@ async def run_worker():
         auto_offset_reset="earliest",
     )
 
-    await consumer.start()
+    try:
+        await consumer.start()
+    except Exception as exc:
+        logger.warning(
+            "Kafka worker could not connect (%s). "
+            "Running without real-time log ingestion.",
+            exc,
+        )
+        try:
+            await consumer.stop()
+        except Exception:
+            pass
+        return
+
     logger.info("Worker listening on topic '%s'", settings.KAFKA_LOGS_TOPIC)
 
     try:

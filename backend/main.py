@@ -39,12 +39,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Remove the dead api_router (you created it but never used it) ─────────────
-app.include_router(auth.router)
-app.include_router(api_key.router)
+# ── Routes ────────────────────────────────────────────────────────────────────
+app.include_router(auth.router,      prefix="/auth",      tags=["Auth"])
+app.include_router(api_key.router,   prefix="/api-keys",  tags=["API Keys"])
 app.include_router(logs.router)
 app.include_router(alerts.router)
-app.include_router(dashboard.router)
+app.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
 
 
 @app.get("/health", tags=["Health"])
