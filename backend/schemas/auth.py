@@ -1,13 +1,28 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, field_validator
+
 
 class RegisterSchema(BaseModel):
     companyName: str
-    firstName:str
+    firstName: str
     lastName: str
-    email: str
+    email: EmailStr
     password: str
-    phoneNumber:str
+
+    @field_validator("password")
+    @classmethod
+    def password_length(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters")
+        if len(v) > 72:
+            raise ValueError("Password cannot be longer than 72 characters")
+        return v
+
 
 class LoginSchema(BaseModel):
-    email: str
+    email: EmailStr
     password: str
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
