@@ -5,6 +5,7 @@ from db.base import Base
 
 from models import user
 
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
