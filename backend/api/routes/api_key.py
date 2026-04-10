@@ -7,7 +7,7 @@ from models.api_key import APIKey
 from models.user import User
 from schemas.api_key import APIKeyResponse
 
-router = APIRouter(prefix="/apikey", tags=["API Keys"])
+router = APIRouter(tags=["API Keys"])
 
 
 @router.post("/generate", response_model=APIKeyResponse, status_code=201)

@@ -13,17 +13,8 @@ from websocket.manager import ws_manager
 router = APIRouter(tags=["Dashboard"])
 
 
-# ── GET /stats ─────────────────────────────────────────────────────────────────
-@router.get("/stats", response_model=StatsResponse)
-def get_stats(
-    current_user: User = Depends(get_current_user),
-    db: Session        = Depends(get_db),
-):
-    """
-    Returns { total_logs, alerts, high_risk } for the dashboard header cards.
-    Matches the design from the spec:
-        { "totalLogs": 1000, "alerts": 25, "highRisk": 5 }
-    """
+def _get_stats_data(current_user: User, db: Session) -> StatsResponse:
+    """Shared logic for dashboard stats endpoints."""
     key_ids = [k.id for k in
                db.query(APIKey).filter(APIKey.user_id == current_user.id).all()]
 
@@ -36,8 +27,31 @@ def get_stats(
                 Alert.resolved == False)  # noqa
         .count()
     )
-
     return StatsResponse(total_logs=total_logs, alerts=alerts, high_risk=high_risk)
+
+
+# ── GET /stats (and /summary alias) ────────────────────────────────────────────
+@router.get("/stats", response_model=StatsResponse)
+@router.get("/summary", response_model=StatsResponse)
+def get_stats(
+    current_user: User = Depends(get_current_user),
+    db: Session        = Depends(get_db),
+):
+    """Dashboard header card stats. Also available at /summary."""
+    return _get_stats_data(current_user, db)
+
+
+# ── GET /risk-score ─────────────────────────────────────────────────────────────
+@router.get("/risk-score")
+def get_risk_score(
+    current_user: User = Depends(get_current_user),
+    db: Session        = Depends(get_db),
+):
+    """Returns a simple risk score derived from high/critical alert ratio."""
+    stats = _get_stats_data(current_user, db)
+    total = stats.total_logs or 1
+    score = min(100, round((stats.high_risk / total) * 100 * 10))
+    return {"risk_score": score, "high_risk": stats.high_risk, "total_logs": stats.total_logs}
 
 
 # ── WebSocket /ws/{api_key_id} ─────────────────────────────────────────────────

@@ -4,9 +4,21 @@ from sqlalchemy.orm import Session
 from schemas.auth import RegisterSchema, LoginSchema, TokenResponse
 from models.user import User
 from core.security import hash_password, verify_password, create_access_token
-from api.deps import get_db
+from api.deps import get_db, get_current_user
 
 router = APIRouter()
+
+
+@router.get("/me")
+def get_me(current_user: User = Depends(get_current_user)):
+    """Return the currently authenticated user's profile."""
+    return {
+        "id": current_user.id,
+        "email": current_user.email,
+        "first_name": current_user.first_name,
+        "last_name": current_user.last_name,
+        "company_name": current_user.company_name,
+    }
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)

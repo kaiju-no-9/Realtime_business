@@ -142,7 +142,7 @@ export const api = {
   },
 
   getMe() {
-    return request<Record<string, unknown>>("/users/me");
+    return request<Record<string, unknown>>("/auth/me");
   },
 
   getDashboardSummary() {
