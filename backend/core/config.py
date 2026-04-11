@@ -3,18 +3,18 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # Database
-    DATABASE_URL: str = "postgresql+pg8000://postgres:mysecretpassword@localhost:5432/postgres"
+    DATABASE_URL: str = os.getenv("DATABASE_URL")
 
     # JWT
-    SECRET_KEY: str = "change-me-in-production"
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    SECRET_KEY: str = os.getenv("SECRET_KEY")
+    ALGORITHM: str = os.getenv("ALGORITHM")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 
     # Kafka
-    KAFKA_BOOTSTRAP_SERVERS: str = "localhost:9092"
-    KAFKA_LOGS_TOPIC: str = "raw_logs"        # company → API → here
-    KAFKA_ALERTS_TOPIC: str = "alerts"         # worker → here → WebSocket
-    KAFKA_GROUP_ID: str = "securelog-workers"
+    KAFKA_BOOTSTRAP_SERVERS: str = os.getenv("KAFKA_BOOTSTRAP_SERVERS")
+    KAFKA_LOGS_TOPIC: str = os.getenv("KAFKA_LOGS_TOPIC")
+    KAFKA_ALERTS_TOPIC: str = os.getenv("KAFKA_ALERTS_TOPIC")
+    KAFKA_GROUP_ID: str = os.getenv("KAFKA_GROUP_ID")   
 
     class Config:
         env_file = ".env"
