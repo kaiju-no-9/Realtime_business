@@ -6,6 +6,7 @@ from models.user import User
 from models.api_key import APIKey
 from core.security import hash_password, verify_password, create_access_token
 from api.deps import get_db, get_current_user
+from api.deps_api_key import verify_api_key
 
 router = APIRouter()
 
@@ -20,6 +21,16 @@ def get_me(current_user: User = Depends(get_current_user)):
         "last_name": current_user.last_name,
         "company_name": current_user.company_name,
     }
+
+
+@router.get("/verify-key")
+def verify_key(api_key: APIKey = Depends(verify_api_key)):
+    """
+    Called by the SecureLog SDK on startup to confirm the API key is valid.
+    SDK sends x-api-key header — same mechanism as POST /logs.
+    Returns 200 if active, 401 automatically if invalid (verify_api_key handles it).
+    """
+    return {"valid": True, "key_id": api_key.id}
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
